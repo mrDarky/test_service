@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 from app.database import get_db
 from app.models import User, UserRole
 from app.schemas import UserCreate, UserResponse, Token
@@ -81,8 +81,7 @@ async def login(
         )
     
     # Update last login
-    from datetime import datetime
-    user.last_login = datetime.utcnow()
+    user.last_login = datetime.now(timezone.utc)
     user.ip_address = request.client.host if request.client else "unknown"
     await db.commit()
     

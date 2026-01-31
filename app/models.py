@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey, Boolean, Enum as SQLEnum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import enum
 
 Base = declarative_base()
@@ -33,7 +33,7 @@ class User(Base):
     role = Column(SQLEnum(UserRole), nullable=False)
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     last_login = Column(DateTime)
     ip_address = Column(String(50))
     
@@ -51,8 +51,8 @@ class Project(Base):
     description = Column(Text)
     status = Column(SQLEnum(ProjectStatus), default=ProjectStatus.ACTIVE)
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # Relationships
     creator = relationship("User", back_populates="created_projects", foreign_keys=[creator_id])
@@ -65,7 +65,7 @@ class ProjectMember(Base):
     id = Column(Integer, primary_key=True, index=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    joined_at = Column(DateTime, default=datetime.utcnow)
+    joined_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     project = relationship("Project", back_populates="members")
@@ -80,8 +80,8 @@ class Task(Base):
     description = Column(Text)
     status = Column(SQLEnum(TaskStatus), default=TaskStatus.OPEN)
     priority = Column(Integer, default=1)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     due_date = Column(DateTime)
     
     # Relationships
@@ -94,7 +94,7 @@ class TaskAssignment(Base):
     id = Column(Integer, primary_key=True, index=True)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    assigned_at = Column(DateTime, default=datetime.utcnow)
+    assigned_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     task = relationship("Task", back_populates="assignments")
@@ -110,7 +110,7 @@ class Message(Base):
     subject = Column(String(200))
     content = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
@@ -122,7 +122,7 @@ class IPLog(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     ip_address = Column(String(50), nullable=False)
     action = Column(String(100))
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     user_agent = Column(String(255))
 
 class Settings(Base):
@@ -132,4 +132,4 @@ class Settings(Base):
     key = Column(String(100), unique=True, nullable=False)
     value = Column(Text)
     description = Column(Text)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

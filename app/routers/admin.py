@@ -175,12 +175,20 @@ async def get_settings(
 
 @router.post("/settings")
 async def create_setting(
-    key: str,
-    value: str,
-    description: str = None,
+    setting_data: dict,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin_user)
 ):
+    key = setting_data.get("key")
+    value = setting_data.get("value")
+    description = setting_data.get("description")
+    
+    if not key or not value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Key and value are required"
+        )
+    
     # Check if key already exists
     result = await db.execute(select(Settings).where(Settings.key == key))
     existing = result.scalar_one_or_none()

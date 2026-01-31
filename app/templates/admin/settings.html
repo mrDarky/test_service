@@ -117,11 +117,13 @@ async function createSetting() {
     const description = document.getElementById('settingDescription').value;
     
     try {
-        const response = await fetch(`/api/admin/settings?key=${encodeURIComponent(key)}&value=${encodeURIComponent(value)}&description=${encodeURIComponent(description)}`, {
+        const response = await fetch('/api/admin/settings', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ key, value, description })
         });
         
         if (response.ok) {
