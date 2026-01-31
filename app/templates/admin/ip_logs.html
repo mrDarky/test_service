@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - IP Logs - Test Service{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">IP Address Logs</h2>
+
+<nav class="nav nav-pills mb-4">
+    <a class="nav-link" href="/admin">Dashboard</a>
+    <a class="nav-link" href="/admin/users">Users</a>
+    <a class="nav-link" href="/admin/projects">Projects</a>
+    <a class="nav-link" href="/admin/tasks">Tasks</a>
+    <a class="nav-link active" href="/admin/ip-logs">IP Logs</a>
+    <a class="nav-link" href="/admin/settings">Settings</a>
+</nav>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>IP Address</th>
+                <th>Action</th>
+                <th>Timestamp</th>
+                <th>User Agent</th>
+            </tr>
+        </thead>
+        <tbody id="ipLogsTable">
+            <!-- IP logs will be loaded here -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+async function loadIPLogs() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/ip-logs?limit=50', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const logs = await response.json();
+            displayIPLogs(logs);
+        } else {
+            showAlert('Failed to load IP logs', 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred', 'danger');
+    }
+}
+
+function displayIPLogs(logs) {
+    const tbody = document.getElementById('ipLogsTable');
+    
+    if (logs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No logs found</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = logs.map(log => `
+        <tr>
+            <td>${log.id}</td>
+            <td>${log.user_id || 'N/A'}</td>
+            <td>${escapeHtml(log.ip_address)}</td>
+            <td><span class="badge bg-secondary">${escapeHtml(log.action || 'N/A')}</span></td>
+            <td>${new Date(log.timestamp).toLocaleString()}</td>
+            <td><small>${escapeHtml(log.user_agent || 'N/A')}</small></td>
+        </tr>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', loadIPLogs);
+</script>
+{% endblock %}

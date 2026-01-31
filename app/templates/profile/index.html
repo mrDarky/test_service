@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Test Service{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2 class="mb-4">My Profile</h2>
+        
+        <div class="card">
+            <div class="card-body">
+                <div id="profileInfo">
+                    <!-- Profile info will be loaded here -->
+                </div>
+                
+                <hr>
+                
+                <h5>Update Profile</h5>
+                <form id="updateProfileForm">
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="fullName">
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/users/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            displayProfile(user);
+        } else {
+            showAlert('Failed to load profile', 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred', 'danger');
+    }
+}
+
+function displayProfile(user) {
+    const container = document.getElementById('profileInfo');
+    container.innerHTML = `
+        <p><strong>Username:</strong> ${escapeHtml(user.username)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(user.email)}</p>
+        <p><strong>Full Name:</strong> ${escapeHtml(user.full_name || 'Not set')}</p>
+        <p><strong>Role:</strong> <span class="badge bg-primary">${user.role}</span></p>
+        <p><strong>Account Created:</strong> ${new Date(user.created_at).toLocaleString()}</p>
+        <p><strong>Status:</strong> <span class="badge bg-${user.is_active ? 'success' : 'danger'}">${user.is_active ? 'Active' : 'Inactive'}</span></p>
+    `;
+    
+    // Fill form
+    document.getElementById('fullName').value = user.full_name || '';
+    document.getElementById('email').value = user.email;
+}
+
+document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const token = localStorage.getItem('token');
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    
+    try {
+        const response = await fetch('/api/users/me', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                full_name: fullName,
+                email: email
+            })
+        });
+        
+        if (response.ok) {
+            showAlert('Profile updated successfully', 'success');
+            loadProfile();
+        } else {
+            const data = await response.json();
+            showAlert(data.detail || 'Failed to update profile', 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred', 'danger');
+    }
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', loadProfile);
+</script>
+{% endblock %}
