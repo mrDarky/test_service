@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Test Service{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 mb-4">Welcome to Test Service</h1>
+        <p class="lead mb-4">A comprehensive platform for project testing and management</p>
+        
+        <div class="row mt-5">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-person-plus-fill text-primary" style="font-size: 3rem;"></i>
+                        <h3 class="card-title mt-3">For Project Creators</h3>
+                        <p class="card-text">Create projects, manage tasks, and collaborate with testers</p>
+                        <a href="/register" class="btn btn-primary">Register as Creator</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="bi bi-bug-fill text-success" style="font-size: 3rem;"></i>
+                        <h3 class="card-title mt-3">For Testers</h3>
+                        <p class="card-text">Join projects, work on tasks, and report findings</p>
+                        <a href="/register" class="btn btn-success">Register as Tester</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-4 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <i class="bi bi-folder-fill text-primary" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-2">Project Management</h5>
+                        <p class="card-text">Create and manage testing projects</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-task text-success" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-2">Task Assignment</h5>
+                        <p class="card-text">Assign and track testing tasks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-chat-dots-fill text-info" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-2">Messaging</h5>
+                        <p class="card-text">Communicate with team members</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <a href="/login" class="btn btn-lg btn-outline-primary me-2">Login</a>
+            <a href="/register" class="btn btn-lg btn-primary">Get Started</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

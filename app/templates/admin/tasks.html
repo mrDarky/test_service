@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Tasks - Test Service{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Task Management</h2>
+
+<nav class="nav nav-pills mb-4">
+    <a class="nav-link" href="/admin">Dashboard</a>
+    <a class="nav-link" href="/admin/users">Users</a>
+    <a class="nav-link" href="/admin/projects">Projects</a>
+    <a class="nav-link active" href="/admin/tasks">Tasks</a>
+    <a class="nav-link" href="/admin/ip-logs">IP Logs</a>
+    <a class="nav-link" href="/admin/settings">Settings</a>
+</nav>
+
+<div id="tasksList">
+    <!-- Tasks will be loaded here -->
+</div>
+
+<script>
+async function loadTasks() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/tasks/?limit=50', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const tasks = await response.json();
+            displayTasks(tasks);
+        } else {
+            showAlert('Failed to load tasks', 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred', 'danger');
+    }
+}
+
+function displayTasks(tasks) {
+    const container = document.getElementById('tasksList');
+    
+    if (tasks.length === 0) {
+        container.innerHTML = '<p class="text-center">No tasks found</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Project ID</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tasks.map(task => `
+                        <tr>
+                            <td>${task.id}</td>
+                            <td>${escapeHtml(task.title)}</td>
+                            <td>${task.project_id}</td>
+                            <td><span class="badge bg-${getTaskStatusBadgeClass(task.status)}">${task.status}</span></td>
+                            <td><span class="badge bg-info">${task.priority}</span></td>
+                            <td>${new Date(task.created_at).toLocaleDateString()}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function getTaskStatusBadgeClass(status) {
+    const classes = {
+        'open': 'warning',
+        'in_progress': 'info',
+        'completed': 'success',
+        'closed': 'secondary'
+    };
+    return classes[status] || 'secondary';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', loadTasks);
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Test Service{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Admin Dashboard</h2>
+
+<nav class="nav nav-pills mb-4">
+    <a class="nav-link active" href="/admin">Dashboard</a>
+    <a class="nav-link" href="/admin/users">Users</a>
+    <a class="nav-link" href="/admin/projects">Projects</a>
+    <a class="nav-link" href="/admin/tasks">Tasks</a>
+    <a class="nav-link" href="/admin/ip-logs">IP Logs</a>
+    <a class="nav-link" href="/admin/settings">Settings</a>
+</nav>
+
+<div id="statsContainer">
+    <!-- Stats will be loaded here -->
+</div>
+
+<script>
+async function loadStats() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/dashboard', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        if (response.ok) {
+            const stats = await response.json();
+            displayStats(stats);
+        } else {
+            showAlert('Failed to load dashboard stats', 'danger');
+        }
+    } catch (error) {
+        showAlert('An error occurred', 'danger');
+    }
+}
+
+function displayStats(stats) {
+    const container = document.getElementById('statsContainer');
+    container.innerHTML = `
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h3>${stats.users.total}</h3>
+                        <p>Total Users</p>
+                        <small>Creators: ${stats.users.creators} | Testers: ${stats.users.testers}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h3>${stats.projects.total}</h3>
+                        <p>Total Projects</p>
+                        <small>Active: ${stats.projects.active}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h3>${stats.tasks.total}</h3>
+                        <p>Total Tasks</p>
+                        <small>Open: ${stats.tasks.open} | Completed: ${stats.tasks.completed}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h3>${stats.messages.total}</h3>
+                        <p>Total Messages</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+document.addEventListener('DOMContentLoaded', loadStats);
+</script>
+{% endblock %}
