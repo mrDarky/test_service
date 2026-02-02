@@ -2,7 +2,7 @@
 LaVague Integration Module
 Generates automated tests from user stories and Gherkin scenarios
 """
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 import re
 
 
@@ -112,7 +112,7 @@ class LaVagueTestGenerator:
         
         return stories
     
-    def generate_test_cases(self, user_stories: str) -> List[Dict[str, any]]:
+    def generate_test_cases(self, user_stories: str) -> List[Dict[str, Any]]:
         """
         Generate test cases from user stories
         Returns a list of test case dictionaries
@@ -130,7 +130,7 @@ class LaVagueTestGenerator:
         
         return test_cases
     
-    def _generate_gherkin_test(self, story: Dict[str, str]) -> Dict[str, any]:
+    def _generate_gherkin_test(self, story: Dict[str, str]) -> Dict[str, Any]:
         """Generate test case from Gherkin scenario"""
         test_name = f"test_{story['scenario'].lower().replace(' ', '_')}"
         
@@ -149,7 +149,7 @@ class LaVagueTestGenerator:
             'code': self._generate_test_code(test_name, setup_steps, action_steps, assertion_steps)
         }
     
-    def _generate_user_story_test(self, story: Dict[str, str]) -> Dict[str, any]:
+    def _generate_user_story_test(self, story: Dict[str, str]) -> Dict[str, Any]:
         """Generate test case from user story"""
         test_name = f"test_{story['action'][:50].lower().replace(' ', '_')}"
         
@@ -171,7 +171,7 @@ class LaVagueTestGenerator:
             'code': self._generate_test_code(test_name, setup_steps, action_steps, assertion_steps)
         }
     
-    def _generate_generic_test(self, story: Dict[str, str]) -> Dict[str, any]:
+    def _generate_generic_test(self, story: Dict[str, str]) -> Dict[str, Any]:
         """Generate test case from generic description"""
         test_name = f"test_{story['description'][:50].lower().replace(' ', '_')}"
         
@@ -233,7 +233,7 @@ import pytest
         
         return file_content
     
-    def get_test_summary(self, user_stories: str) -> Dict[str, any]:
+    def get_test_summary(self, user_stories: str) -> Dict[str, Any]:
         """Get a summary of tests that would be generated"""
         test_cases = self.generate_test_cases(user_stories)
         

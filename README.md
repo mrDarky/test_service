@@ -181,7 +181,6 @@ test_service/
 - `POST /api/projects/{id}/join` - Join project
 - `GET /api/projects/{id}/test-summary` - Get test generation summary
 - `GET /api/projects/{id}/generate-tests` - Generate tests from user stories
-- `POST /api/projects/{id}/join` - Join project
 
 ### Tasks
 - `GET /api/tasks/` - List tasks

@@ -206,6 +206,24 @@ async def get_test_summary(
             detail="Project not found"
         )
     
+    # Check if user has access to this project (creator, member, or admin)
+    if project.creator_id != current_user.id and not current_user.is_admin:
+        # Check if user is a member
+        result = await db.execute(
+            select(ProjectMember).where(
+                and_(
+                    ProjectMember.project_id == project_id,
+                    ProjectMember.user_id == current_user.id
+                )
+            )
+        )
+        is_member = result.scalar_one_or_none()
+        if not is_member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions to access this project"
+            )
+    
     if not project.user_stories:
         return {
             "total_tests": 0,
@@ -232,6 +250,24 @@ async def generate_tests(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
         )
+    
+    # Check if user has access to this project (creator, member, or admin)
+    if project.creator_id != current_user.id and not current_user.is_admin:
+        # Check if user is a member
+        result = await db.execute(
+            select(ProjectMember).where(
+                and_(
+                    ProjectMember.project_id == project_id,
+                    ProjectMember.user_id == current_user.id
+                )
+            )
+        )
+        is_member = result.scalar_one_or_none()
+        if not is_member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions to access this project"
+            )
     
     if not project.user_stories:
         raise HTTPException(
