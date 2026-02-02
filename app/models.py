@@ -51,6 +51,7 @@ class Project(Base):
     description = Column(Text)
     status = Column(SQLEnum(ProjectStatus), default=ProjectStatus.ACTIVE)
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_stories = Column(Text)  # Store user stories or Gherkin scenarios
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
