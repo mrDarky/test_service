@@ -35,6 +35,7 @@ class ProjectBase(BaseModel):
     name: str
     description: Optional[str] = None
     status: Optional[ProjectStatus] = ProjectStatus.ACTIVE
+    user_stories: Optional[str] = None
 
 class ProjectCreate(ProjectBase):
     pass
@@ -52,6 +53,7 @@ class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     status: Optional[ProjectStatus] = None
+    user_stories: Optional[str] = None
 
 # Task Schemas
 class TaskBase(BaseModel):

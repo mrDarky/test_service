@@ -6,6 +6,7 @@ from app.database import get_db
 from app.models import Project, User, ProjectMember, UserRole, ProjectStatus
 from app.schemas import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectMemberCreate
 from app.auth import get_current_active_user
+from app.lavague_integration import test_generator
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
@@ -25,6 +26,7 @@ async def create_project(
         name=project.name,
         description=project.description,
         status=project.status,
+        user_stories=project.user_stories,
         creator_id=current_user.id
     )
     
@@ -110,6 +112,8 @@ async def update_project(
         project.description = project_update.description
     if project_update.status is not None:
         project.status = project_update.status
+    if project_update.user_stories is not None:
+        project.user_stories = project_update.user_stories
     
     await db.commit()
     await db.refresh(project)
@@ -185,3 +189,96 @@ async def join_project(
     await db.commit()
     
     return {"message": "Successfully joined project"}
+
+@router.get("/{project_id}/test-summary")
+async def get_test_summary(
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get a summary of tests that can be generated from project user stories"""
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+    
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found"
+        )
+    
+    # Check if user has access to this project (creator, member, or admin)
+    if project.creator_id != current_user.id and not current_user.is_admin:
+        # Check if user is a member
+        result = await db.execute(
+            select(ProjectMember).where(
+                and_(
+                    ProjectMember.project_id == project_id,
+                    ProjectMember.user_id == current_user.id
+                )
+            )
+        )
+        is_member = result.scalar_one_or_none()
+        if not is_member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions to access this project"
+            )
+    
+    if not project.user_stories:
+        return {
+            "total_tests": 0,
+            "test_types": {},
+            "test_names": [],
+            "message": "No user stories defined for this project"
+        }
+    
+    summary = test_generator.get_test_summary(project.user_stories)
+    return summary
+
+@router.get("/{project_id}/generate-tests")
+async def generate_tests(
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Generate test file content from project user stories"""
+    result = await db.execute(select(Project).where(Project.id == project_id))
+    project = result.scalar_one_or_none()
+    
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found"
+        )
+    
+    # Check if user has access to this project (creator, member, or admin)
+    if project.creator_id != current_user.id and not current_user.is_admin:
+        # Check if user is a member
+        result = await db.execute(
+            select(ProjectMember).where(
+                and_(
+                    ProjectMember.project_id == project_id,
+                    ProjectMember.user_id == current_user.id
+                )
+            )
+        )
+        is_member = result.scalar_one_or_none()
+        if not is_member:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not enough permissions to access this project"
+            )
+    
+    if not project.user_stories:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No user stories defined for this project"
+        )
+    
+    test_file_content = test_generator.generate_test_file(project.name, project.user_stories)
+    
+    return {
+        "project_name": project.name,
+        "test_file_content": test_file_content,
+        "filename": f"test_{project.name.lower().replace(' ', '_')}.py"
+    }
