@@ -16,6 +16,8 @@ A comprehensive web service for project testing management built with FastAPI, B
 - Project status tracking (Active, Completed, Archived)
 - Search and filter projects
 - Join projects as a tester
+- **User Stories & Gherkin**: Add user stories or Gherkin scenarios to projects
+- **Automated Test Generation**: Generate test cases from user stories using LaVague integration
 
 ### Task Management
 - Create tasks within projects
@@ -42,6 +44,8 @@ A comprehensive web service for project testing management built with FastAPI, B
 - Responsive design with Bootstrap 5
 - IP address control and logging
 - Async database operations for better performance
+- **User Stories Support**: Add user stories or Gherkin/BDD scenarios to projects
+- **LaVague Integration**: Automated test generation from user stories
 
 ## Technology Stack
 
@@ -170,10 +174,13 @@ test_service/
 
 ### Projects
 - `GET /api/projects/` - List projects
-- `POST /api/projects/` - Create project
+- `POST /api/projects/` - Create project (with optional user_stories field)
 - `GET /api/projects/{id}` - Get project details
 - `PUT /api/projects/{id}` - Update project
 - `DELETE /api/projects/{id}` - Delete project
+- `POST /api/projects/{id}/join` - Join project
+- `GET /api/projects/{id}/test-summary` - Get test generation summary
+- `GET /api/projects/{id}/generate-tests` - Generate tests from user stories
 - `POST /api/projects/{id}/join` - Join project
 
 ### Tasks
@@ -204,6 +211,48 @@ test_service/
 - `GET /api/admin/settings` - Get system settings
 - `POST /api/admin/settings` - Create setting
 - `PUT /api/admin/settings/{id}` - Update setting
+
+## User Stories & Test Generation
+
+This application now supports adding user stories or Gherkin scenarios to projects and automatically generating test cases from them using LaVague integration.
+
+### Supported Formats
+
+**Gherkin/BDD Format:**
+```gherkin
+Feature: User Authentication
+Scenario: Successful login
+  Given the user is on the login page
+  When the user enters valid credentials
+  Then the user should be logged in
+```
+
+**Simple User Story Format:**
+```
+As a project creator I want to create projects So that I can organize testing work
+```
+
+### Quick Start
+
+1. **Create a project with user stories:**
+```bash
+curl -X POST http://localhost:8000/api/projects/ \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Project",
+    "description": "Project description",
+    "user_stories": "Feature: Login\nScenario: User logs in..."
+  }'
+```
+
+2. **Generate tests from user stories:**
+```bash
+curl http://localhost:8000/api/projects/1/generate-tests \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+For detailed documentation, see [USER_STORIES_FEATURE.md](USER_STORIES_FEATURE.md)
 
 ## Security Features
 
